@@ -1,10 +1,11 @@
 package com.bogoslovov.kaloyan.webrtcchat;
 
-import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,10 +36,30 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        doSomething(this);
+
+        initButtons();
     }
 
-    private void doSomething(final Activity activity){
+    private void initButtons(){
+        Button client1 = (Button)findViewById(R.id.client_1);
+        Button client2 = (Button)findViewById(R.id.client_2);
+
+        client1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doSomething();
+            }
+
+        });
+        client2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doSomethingElse();
+            }
+        });
+    }
+
+    private void doSomething(){
 
 
         //////////////////////////////////sockets////////////////////////////////////////////////
@@ -49,7 +70,8 @@ public class MainActivity extends AppCompatActivity {
                 WebSocketFactory factory = new WebSocketFactory();
                 webSocket = getWebSocket(factory);
                 webSocket.addListener(new SocketAdapter());
-                connect();
+                SignalMessage message = new SignalMessage(SignalMessage.MsgType.OFFER, "sender", "51", "chico Slavcho", null);
+                connect(message);
 
 
 
@@ -118,6 +140,82 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private  void doSomethingElse(){
+
+        //////////////////////////////////sockets////////////////////////////////////////////////
+        AsyncTask task = new AsyncTask() {
+            @Override
+            protected Object doInBackground(Object[] params) {
+
+                WebSocketFactory factory = new WebSocketFactory();
+                webSocket = getWebSocket(factory);
+                webSocket.addListener(new SocketAdapter());
+                SignalMessage message = new SignalMessage(SignalMessage.MsgType.GET_OFFER, "sender", "51", "chico Slavcho", null);
+                connect(message);
+
+
+                ///////////////////////////////////webRTC//////////////////////////////////////////
+                PeerConnectionFactory.initializeAndroidGlobals(getApplicationContext(), true, true,true, null);
+                PeerConnectionFactory peerConnectionFactory = new PeerConnectionFactory();
+
+                MediaConstraints mediaConstraints = new MediaConstraints();
+                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio","false"));
+                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo","false"));
+                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement","true"));
+
+                List<PeerConnection.IceServer> iceServers = new ArrayList<>();
+                iceServers.add(new PeerConnection.IceServer(Constants.STUN_SERVER_1));
+                iceServers.add(new PeerConnection.IceServer(Constants.STUN_SERVER_2));
+                iceServers.add(new PeerConnection.IceServer(Constants.STUN_SERVER_3));
+                iceServers.add(new PeerConnection.IceServer(Constants.STUN_SERVER_4));
+                iceServers.add(new PeerConnection.IceServer(Constants.STUN_SERVER_5));
+
+                PeerObserver observer = new PeerObserver();
+
+                peerConnection = peerConnectionFactory.createPeerConnection(
+                        iceServers,
+                        mediaConstraints,
+                        observer);
+
+                SdpObserver sdpObserver = new SdpObserver() {
+                    @Override
+                    public void onCreateSuccess(SessionDescription sessionDescription) {
+                        Log.i("information","CREATE SUCCESSthtyhtyh");
+                        peerConnection.setLocalDescription(this,sessionDescription);
+                        SignalMessage answerMessage = new SignalMessage(SignalMessage.MsgType.ANSWER,"sender", "51", "chico Slavcho", sessionDescription);
+                        try {
+                            webSocket.sendText(mapper.writeValueAsString(answerMessage));
+                        } catch (JsonProcessingException e) {
+                            e.printStackTrace();
+                            Log.e("error","JsonProcessingException");
+                        }
+                    }
+
+                    @Override
+                    public void onSetSuccess() {
+
+                    }
+
+                    @Override
+                    public void onCreateFailure(String s) {
+
+                    }
+
+                    @Override
+                    public void onSetFailure(String s) {
+
+                    }
+                };
+
+                peerConnection.createOffer(sdpObserver,mediaConstraints);
+
+                return null;
+            }
+        };
+        task.execute();
+
+    }
+
     private WebSocket getWebSocket(WebSocketFactory factory){
         WebSocket webSocket = null;
         try {
@@ -129,10 +227,9 @@ public class MainActivity extends AppCompatActivity {
         return webSocket;
     }
 
-    private void connect(){
+    private void connect(SignalMessage message){
         try {
             webSocket.connect();
-            SignalMessage message = new SignalMessage(SignalMessage.MsgType.OFFER, "sender", "51", "chico Slavcho", null);
             mapper = new ObjectMapper();
 
             webSocket.sendText(mapper.writeValueAsString(message));
