@@ -6,7 +6,7 @@ import org.webrtc.MediaStream;
 import org.webrtc.PeerConnection;
 
 /**
- * Created by kaloqn on 3/27/17.
+ * Created by kaloyan on 3/27/17.
  */
 
 public class PeerObserver implements PeerConnection.Observer{
