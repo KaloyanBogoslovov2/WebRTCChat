@@ -15,6 +15,6 @@ public class Constants {
 
     /** localhost endpoint */
 
-    public static final String LOCAL_HOST_ENDPOINT = "wss://192.168.6.26:8080/ws/signal";
+    public static final String LOCAL_HOST_ENDPOINT = "ws://192.168.6.26:8080/ws/signal";
 
 }
