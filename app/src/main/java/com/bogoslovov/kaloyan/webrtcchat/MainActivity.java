@@ -67,11 +67,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected Object doInBackground(Object[] params) {
 
-                WebSocketFactory factory = new WebSocketFactory();
-                webSocket = getWebSocket(factory);
-                webSocket.addListener(new SocketAdapter());
-                SignalMessage message = new SignalMessage(SignalMessage.MsgType.OFFER, "sender", "51", "chico Slavcho", null);
-                connect(message);
+
+
 
 
 
@@ -92,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
                 iceServers.add(new PeerConnection.IceServer(Constants.STUN_SERVER_4));
                 iceServers.add(new PeerConnection.IceServer(Constants.STUN_SERVER_5));
 
-                PeerObserver observer = new PeerObserver();
+                PeerObserver observer = new PeerObserver(webSocket);
 
                 peerConnection = peerConnectionFactory.createPeerConnection(
                         iceServers,
@@ -128,6 +125,11 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 };
+                WebSocketFactory factory = new WebSocketFactory();
+                webSocket = getWebSocket(factory);
+                webSocket.addListener(new SocketAdapter(peerConnection,sdpObserver,mediaConstraints));
+                SignalMessage message = new SignalMessage(SignalMessage.MsgType.OFFER, "sender", "51", "chico Slavcho", null);
+                connect(message);
 
                 peerConnection.createOffer(sdpObserver,mediaConstraints);
 
@@ -147,12 +149,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected Object doInBackground(Object[] params) {
 
-                WebSocketFactory factory = new WebSocketFactory();
-                webSocket = getWebSocket(factory);
-                webSocket.addListener(new SocketAdapter());
-                SignalMessage message = new SignalMessage(SignalMessage.MsgType.GET_OFFER, "sender", "51", "chico Slavcho", null);
-                connect(message);
-
 
                 ///////////////////////////////////webRTC//////////////////////////////////////////
                 PeerConnectionFactory.initializeAndroidGlobals(getApplicationContext(), true, true,true, null);
@@ -170,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 iceServers.add(new PeerConnection.IceServer(Constants.STUN_SERVER_4));
                 iceServers.add(new PeerConnection.IceServer(Constants.STUN_SERVER_5));
 
-                PeerObserver observer = new PeerObserver();
+                PeerObserver observer = new PeerObserver(webSocket);
 
                 peerConnection = peerConnectionFactory.createPeerConnection(
                         iceServers,
@@ -206,6 +202,12 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 };
+
+                WebSocketFactory factory = new WebSocketFactory();
+                webSocket = getWebSocket(factory);
+                webSocket.addListener(new SocketAdapter(peerConnection,sdpObserver,mediaConstraints));
+                SignalMessage message = new SignalMessage(SignalMessage.MsgType.GET_OFFER, "sender", "51", "chico Slavcho", null);
+                connect(message);
 
                 peerConnection.createOffer(sdpObserver,mediaConstraints);
 

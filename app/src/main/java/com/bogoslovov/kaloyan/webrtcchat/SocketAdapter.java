@@ -1,10 +1,20 @@
 package com.bogoslovov.kaloyan.webrtcchat;
 
+import android.util.Log;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFrame;
 import com.neovisionaries.ws.client.WebSocketListener;
 import com.neovisionaries.ws.client.WebSocketState;
+
+import org.webrtc.IceCandidate;
+import org.webrtc.MediaConstraints;
+import org.webrtc.PeerConnection;
+import org.webrtc.SdpObserver;
+import org.webrtc.SessionDescription;
 
 import java.util.List;
 import java.util.Map;
@@ -14,6 +24,15 @@ import java.util.Map;
  */
 
 public class SocketAdapter implements WebSocketListener {
+    private PeerConnection peerConnection;
+    private SdpObserver sdpObserver;
+    private MediaConstraints mediaConstraints;
+
+    public SocketAdapter(PeerConnection peer, SdpObserver observer, MediaConstraints constraints){
+        peerConnection = peer;
+        sdpObserver = observer;
+        mediaConstraints = constraints;
+    }
     @Override
     public void onStateChanged(WebSocket websocket, WebSocketState newState) throws Exception {
 
@@ -71,6 +90,35 @@ public class SocketAdapter implements WebSocketListener {
 
     @Override
     public void onTextMessage(WebSocket websocket, String text) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        SignalMessage msg = mapper.readValue(text, SignalMessage.class);
+        switch (msg.getType()) {
+            case OFFER: {
+                JsonNode node = mapper.valueToTree(msg.getSdp());
+                String sdpPayload = node.get("sdp").asText();
+                SessionDescription sessionDescription = new SessionDescription(SessionDescription.Type.OFFER,sdpPayload);
+                peerConnection.setRemoteDescription(sdpObserver,sessionDescription);
+                peerConnection.createAnswer(sdpObserver,mediaConstraints);
+                Log.i("information",msg.getRecipient());
+                break;
+            }
+            case ANSWER: {
+                SessionDescription sessionDescription = new SessionDescription(SessionDescription.Type.ANSWER,mapper.writeValueAsString(msg.getSdp()));
+                peerConnection.setRemoteDescription(sdpObserver,sessionDescription);
+                break;
+            }
+            case ICE: {
+                JsonNode node = mapper.valueToTree(msg.getSdp());
+                IceCandidate iceCandidate =  new IceCandidate(node.get("sdpMid").asText(),node.get("sdpMLineIndex").asInt(),
+                        node.get("candidate").asText());
+                peerConnection.addIceCandidate(iceCandidate);
+                break;
+            }
+            default:
+                break;
+
+        }
+
         System.out.println("The message is: "+text);
     }
 
