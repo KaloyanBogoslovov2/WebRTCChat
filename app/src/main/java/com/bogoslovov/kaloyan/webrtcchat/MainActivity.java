@@ -25,10 +25,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private PeerConnection peerConnection;
     private ObjectMapper mapper;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,12 +66,6 @@ public class MainActivity extends AppCompatActivity {
                 WebSocketFactory factory = new WebSocketFactory();
                 final WebSocket webSocket = getWebSocket(factory);
 
-
-
-
-
-
-
                 ///////////////////////////////////webRTC//////////////////////////////////////////
                 PeerConnectionFactory.initializeAndroidGlobals(getApplicationContext(), true, true,true, null);
                 PeerConnectionFactory peerConnectionFactory = new PeerConnectionFactory();
@@ -93,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
                 PeerObserver observer = new PeerObserver(webSocket);
 
-                peerConnection = peerConnectionFactory.createPeerConnection(
+                final PeerConnection peerConnection = peerConnectionFactory.createPeerConnection(
                         iceServers,
                         mediaConstraints,
                         observer);
@@ -170,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
                 PeerObserver observer = new PeerObserver(webSocket);
 
-                peerConnection = peerConnectionFactory.createPeerConnection(
+                final PeerConnection peerConnection = peerConnectionFactory.createPeerConnection(
                         iceServers,
                         mediaConstraints,
                         observer);
@@ -210,8 +201,6 @@ public class MainActivity extends AppCompatActivity {
                 webSocket.addListener(new SocketAdapter(peerConnection,sdpObserver2,mediaConstraints));
                 SignalMessage message = new SignalMessage(SignalMessage.MsgType.GET_OFFER, "sender", "51", "chico Slavcho", null);
                 connect(message,webSocket);
-
-
 
                 return null;
             }

@@ -1,5 +1,8 @@
 package com.bogoslovov.kaloyan.webrtcchat;
 
+import android.util.Log;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neovisionaries.ws.client.WebSocket;
@@ -97,9 +100,22 @@ public class SocketAdapter implements WebSocketListener {
                 //String sdpPayload = node.get("sdp").asText();
                 String sdpPayload = msg.getSdp().toString();
                 SessionDescription sessionDescription = new SessionDescription(SessionDescription.Type.OFFER,sdpPayload);
+                System.out.println("sessionDescription: "+sessionDescription.description);
                 peerConnection.setRemoteDescription(sdpObserver,sessionDescription);
                 System.out.println("Offer"+msg.getRecipient());
                 peerConnection.createAnswer(sdpObserver,mediaConstraints);
+
+                ////////////////////////////////////////////
+                peerConnection.setLocalDescription(sdpObserver,sessionDescription);
+                System.out.println("sessionDescription:"+sessionDescription);
+                SignalMessage answerMessage = new SignalMessage(SignalMessage.MsgType.ANSWER,"sender", "51", "chico Slavcho", sessionDescription);
+                try {
+                    websocket.sendText(mapper.writeValueAsString(answerMessage));
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                    Log.e("error","JsonProcessingException");
+                }
+                ////////////////////////////////////////////
 
                 break;
             }
