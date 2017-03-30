@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                 SdpObserver sdpObserver = new SdpObserver() {
                     @Override
                     public void onCreateSuccess(SessionDescription sessionDescription) {
-                        Log.i("information","CREATE SUCCESSthtyhtyh");
+                        Log.i("information","CREATE SUCCESSthtyhtyh OFFER");
                         peerConnection.setLocalDescription(this,sessionDescription);
                         SignalMessage answerMessage = new SignalMessage(SignalMessage.MsgType.OFFER,"sender", "51", "chico Slavcho", sessionDescription);
                         try {
@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
                 SdpObserver sdpObserver = new SdpObserver() {
                     @Override
                     public void onCreateSuccess(SessionDescription sessionDescription) {
-                        Log.i("information","CREATE SUCCESSthtyhtyh");
+                        Log.i("information","CREATE SUCCESSthtyhtyh ANSWER");
                         peerConnection.setLocalDescription(this,sessionDescription);
                         SignalMessage answerMessage = new SignalMessage(SignalMessage.MsgType.ANSWER,"sender", "51", "chico Slavcho", sessionDescription);
                         try {

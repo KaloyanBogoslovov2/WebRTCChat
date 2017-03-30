@@ -1,7 +1,5 @@
 package com.bogoslovov.kaloyan.webrtcchat;
 
-import android.util.Log;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neovisionaries.ws.client.WebSocket;
@@ -90,24 +88,29 @@ public class SocketAdapter implements WebSocketListener {
 
     @Override
     public void onTextMessage(WebSocket websocket, String text) throws Exception {
+        System.out.println("The message is: "+text);
         ObjectMapper mapper = new ObjectMapper();
         SignalMessage msg = mapper.readValue(text, SignalMessage.class);
         switch (msg.getType()) {
             case OFFER: {
-                JsonNode node = mapper.valueToTree(msg.getSdp());
-                String sdpPayload = node.get("sdp").asText();
+                //FIXED
+                String sdpPayload = msg.getSdp().toString();
                 SessionDescription sessionDescription = new SessionDescription(SessionDescription.Type.OFFER,sdpPayload);
                 peerConnection.setRemoteDescription(sdpObserver,sessionDescription);
+                System.out.println("Offer"+msg.getRecipient());
                 peerConnection.createAnswer(sdpObserver,mediaConstraints);
-                Log.i("information",msg.getRecipient());
+
                 break;
             }
             case ANSWER: {
+                System.out.println("ANSWER"+msg.getRecipient());
                 SessionDescription sessionDescription = new SessionDescription(SessionDescription.Type.ANSWER,mapper.writeValueAsString(msg.getSdp()));
                 peerConnection.setRemoteDescription(sdpObserver,sessionDescription);
+
                 break;
             }
             case ICE: {
+                System.out.println("ICE on TextMessage");
                 JsonNode node = mapper.valueToTree(msg.getSdp());
                 IceCandidate iceCandidate =  new IceCandidate(node.get("sdpMid").asText(),node.get("sdpMLineIndex").asInt(),
                         node.get("candidate").asText());
@@ -119,7 +122,7 @@ public class SocketAdapter implements WebSocketListener {
 
         }
 
-        System.out.println("The message is: "+text);
+
     }
 
     @Override

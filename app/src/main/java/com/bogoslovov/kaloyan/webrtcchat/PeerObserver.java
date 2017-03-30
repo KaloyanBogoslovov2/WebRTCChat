@@ -42,7 +42,7 @@ public class PeerObserver implements PeerConnection.Observer{
 
     @Override
     public void onIceCandidate(IceCandidate iceCandidate) {
-
+        System.out.println("ICE on onIceCandidate");
         SignalMessage iceMessage = new SignalMessage(SignalMessage.MsgType.ICE, "sender", "51", "chico Slavcho", iceCandidate);
         try {
             ObjectMapper mapper = new ObjectMapper();
