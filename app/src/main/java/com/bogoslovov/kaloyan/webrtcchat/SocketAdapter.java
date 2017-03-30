@@ -93,7 +93,8 @@ public class SocketAdapter implements WebSocketListener {
         SignalMessage msg = mapper.readValue(text, SignalMessage.class);
         switch (msg.getType()) {
             case OFFER: {
-                //FIXED
+                //JsonNode node = mapper.valueToTree(msg.getSdp());
+                //String sdpPayload = node.get("sdp").asText();
                 String sdpPayload = msg.getSdp().toString();
                 SessionDescription sessionDescription = new SessionDescription(SessionDescription.Type.OFFER,sdpPayload);
                 peerConnection.setRemoteDescription(sdpObserver,sessionDescription);

@@ -26,7 +26,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private PeerConnection peerConnection;
-    private WebSocket webSocket;
     private ObjectMapper mapper;
 
 
@@ -67,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected Object doInBackground(Object[] params) {
 
+                WebSocketFactory factory = new WebSocketFactory();
+                final WebSocket webSocket = getWebSocket(factory);
+
 
 
 
@@ -78,8 +80,8 @@ public class MainActivity extends AppCompatActivity {
                 PeerConnectionFactory peerConnectionFactory = new PeerConnectionFactory();
 
                 MediaConstraints mediaConstraints = new MediaConstraints();
-                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio","false"));
-                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo","false"));
+                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio","true"));
+                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo","true"));
                 mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement","true"));
 
                 List<PeerConnection.IceServer> iceServers = new ArrayList<>();
@@ -125,11 +127,9 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 };
-                WebSocketFactory factory = new WebSocketFactory();
-                webSocket = getWebSocket(factory);
                 webSocket.addListener(new SocketAdapter(peerConnection,sdpObserver,mediaConstraints));
                 SignalMessage message = new SignalMessage(SignalMessage.MsgType.OFFER, "sender", "51", "chico Slavcho", null);
-                connect(message);
+                connect(message, webSocket);
 
                 peerConnection.createOffer(sdpObserver,mediaConstraints);
 
@@ -149,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected Object doInBackground(Object[] params) {
 
+                WebSocketFactory factory = new WebSocketFactory();
+                final WebSocket webSocket = getWebSocket(factory);
 
                 ///////////////////////////////////webRTC//////////////////////////////////////////
                 PeerConnectionFactory.initializeAndroidGlobals(getApplicationContext(), true, true,true, null);
@@ -173,11 +175,12 @@ public class MainActivity extends AppCompatActivity {
                         mediaConstraints,
                         observer);
 
-                SdpObserver sdpObserver = new SdpObserver() {
+                SdpObserver sdpObserver2 = new SdpObserver() {
                     @Override
                     public void onCreateSuccess(SessionDescription sessionDescription) {
                         Log.i("information","CREATE SUCCESSthtyhtyh ANSWER");
                         peerConnection.setLocalDescription(this,sessionDescription);
+                        System.out.println("sessionDescription:"+sessionDescription);
                         SignalMessage answerMessage = new SignalMessage(SignalMessage.MsgType.ANSWER,"sender", "51", "chico Slavcho", sessionDescription);
                         try {
                             webSocket.sendText(mapper.writeValueAsString(answerMessage));
@@ -203,13 +206,12 @@ public class MainActivity extends AppCompatActivity {
                     }
                 };
 
-                WebSocketFactory factory = new WebSocketFactory();
-                webSocket = getWebSocket(factory);
-                webSocket.addListener(new SocketAdapter(peerConnection,sdpObserver,mediaConstraints));
-                SignalMessage message = new SignalMessage(SignalMessage.MsgType.GET_OFFER, "sender", "51", "chico Slavcho", null);
-                connect(message);
 
-                peerConnection.createOffer(sdpObserver,mediaConstraints);
+                webSocket.addListener(new SocketAdapter(peerConnection,sdpObserver2,mediaConstraints));
+                SignalMessage message = new SignalMessage(SignalMessage.MsgType.GET_OFFER, "sender", "51", "chico Slavcho", null);
+                connect(message,webSocket);
+
+
 
                 return null;
             }
@@ -229,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
         return webSocket;
     }
 
-    private void connect(SignalMessage message){
+    private void connect(SignalMessage message, WebSocket webSocket){
         try {
             webSocket.connect();
             mapper = new ObjectMapper();
