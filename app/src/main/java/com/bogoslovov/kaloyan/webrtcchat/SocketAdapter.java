@@ -1,8 +1,5 @@
 package com.bogoslovov.kaloyan.webrtcchat;
 
-import android.util.Log;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neovisionaries.ws.client.WebSocket;
@@ -106,15 +103,15 @@ public class SocketAdapter implements WebSocketListener {
                 peerConnection.createAnswer(sdpObserver,mediaConstraints);
 
                 ////////////////////////////////////////////
-                peerConnection.setLocalDescription(sdpObserver,sessionDescription);
-                System.out.println("sessionDescription:"+sessionDescription);
-                SignalMessage answerMessage = new SignalMessage(SignalMessage.MsgType.ANSWER,"sender", "51", "chico Slavcho", sessionDescription);
-                try {
-                    websocket.sendText(mapper.writeValueAsString(answerMessage));
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                    Log.e("error","JsonProcessingException");
-                }
+//                peerConnection.setLocalDescription(sdpObserver,sessionDescription);
+//                System.out.println("sessionDescription:"+sessionDescription);
+//                SignalMessage answerMessage = new SignalMessage(SignalMessage.MsgType.ANSWER,"sender", "51", "chico Slavcho", sessionDescription);
+//                try {
+//                    websocket.sendText(mapper.writeValueAsString(answerMessage));
+//                } catch (JsonProcessingException e) {
+//                    e.printStackTrace();
+//                    Log.e("error","JsonProcessingException");
+//                }
                 ////////////////////////////////////////////
 
                 break;
@@ -122,6 +119,7 @@ public class SocketAdapter implements WebSocketListener {
             case ANSWER: {
                 System.out.println("ANSWER"+msg.getRecipient());
                 SessionDescription sessionDescription = new SessionDescription(SessionDescription.Type.ANSWER,mapper.writeValueAsString(msg.getSdp()));
+                System.out.println("sessionDescription: "+sessionDescription.description);
                 peerConnection.setRemoteDescription(sdpObserver,sessionDescription);
 
                 break;

@@ -71,8 +71,8 @@ public class MainActivity extends AppCompatActivity {
                 PeerConnectionFactory peerConnectionFactory = new PeerConnectionFactory();
 
                 MediaConstraints mediaConstraints = new MediaConstraints();
-                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio","true"));
-                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo","true"));
+                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio","false"));
+                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo","false"));
                 mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement","true"));
 
                 List<PeerConnection.IceServer> iceServers = new ArrayList<>();
@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onCreateSuccess(SessionDescription sessionDescription) {
                         Log.i("information","CREATE SUCCESSthtyhtyh ANSWER");
                         peerConnection.setLocalDescription(this,sessionDescription);
-                        System.out.println("sessionDescription:"+sessionDescription);
+                        System.out.println("sessionDescription:"+sessionDescription.description);
                         SignalMessage answerMessage = new SignalMessage(SignalMessage.MsgType.ANSWER,"sender", "51", "chico Slavcho", sessionDescription);
                         try {
                             webSocket.sendText(mapper.writeValueAsString(answerMessage));
