@@ -71,8 +71,8 @@ public class MainActivity extends AppCompatActivity {
                 PeerConnectionFactory peerConnectionFactory = new PeerConnectionFactory();
 
                 MediaConstraints mediaConstraints = new MediaConstraints();
-                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio","false"));
-                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo","false"));
+                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio","true"));
+                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo","true"));
                 mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement","true"));
 
                 List<PeerConnection.IceServer> iceServers = new ArrayList<>();
@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
                         peerConnection.setLocalDescription(this,sessionDescription);
                         SignalMessage answerMessage = new SignalMessage(SignalMessage.MsgType.OFFER,"sender", "51", "chico Slavcho", sessionDescription);
                         try {
+                            System.out.println(mapper.writeValueAsString(answerMessage));
                             webSocket.sendText(mapper.writeValueAsString(answerMessage));
                         } catch (JsonProcessingException e) {
                             e.printStackTrace();
@@ -148,8 +149,8 @@ public class MainActivity extends AppCompatActivity {
                 PeerConnectionFactory peerConnectionFactory = new PeerConnectionFactory();
 
                 MediaConstraints mediaConstraints = new MediaConstraints();
-                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio","false"));
-                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo","false"));
+                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio","true"));
+                mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo","true"));
                 mediaConstraints.mandatory.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement","true"));
 
                 List<PeerConnection.IceServer> iceServers = new ArrayList<>();
@@ -172,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.i("information","CREATE SUCCESSthtyhtyh ANSWER");
                         peerConnection.setLocalDescription(this,sessionDescription);
                         System.out.println("sessionDescription:"+sessionDescription.description);
-                        SignalMessage answerMessage = new SignalMessage(SignalMessage.MsgType.ANSWER,"sender", "51", "chico Slavcho", sessionDescription);
+                        SignalMessage answerMessage = new SignalMessage(SignalMessage.MsgType.ANSWER,"chico Slavcho", "51", "sender", sessionDescription);
                         try {
                             webSocket.sendText(mapper.writeValueAsString(answerMessage));
                         } catch (JsonProcessingException e) {
@@ -183,17 +184,19 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onSetSuccess() {
-
+                        System.out.println("onSetSuccess: ");
                     }
 
                     @Override
                     public void onCreateFailure(String s) {
 
+                        System.out.println("Stacktrace:"+stackTraceToString());
+                        System.out.println("onCreateFailure: "+s);
                     }
 
                     @Override
                     public void onSetFailure(String s) {
-
+                        System.out.println("onSetFailure: "+s);
                     }
                 };
 
@@ -236,5 +239,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    public String stackTraceToString() {
+        StringBuilder sb = new StringBuilder();
+        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+            sb.append(element.toString());
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
 }

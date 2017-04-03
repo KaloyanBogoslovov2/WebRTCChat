@@ -27,9 +27,9 @@ public class SocketAdapter implements WebSocketListener {
     private MediaConstraints mediaConstraints;
 
     public SocketAdapter(PeerConnection peer, SdpObserver observer, MediaConstraints constraints){
-        peerConnection = peer;
-        sdpObserver = observer;
-        mediaConstraints = constraints;
+        this.peerConnection = peer;
+        this.sdpObserver = observer;
+        this.mediaConstraints = constraints;
     }
     @Override
     public void onStateChanged(WebSocket websocket, WebSocketState newState) throws Exception {
@@ -96,15 +96,17 @@ public class SocketAdapter implements WebSocketListener {
                 //JsonNode node = mapper.valueToTree(msg.getSdp());
                 //String sdpPayload = node.get("sdp").asText();
                 String sdpPayload = msg.getSdp().toString();
-                SessionDescription sessionDescription = new SessionDescription(SessionDescription.Type.OFFER,sdpPayload);
-                System.out.println("sessionDescription: "+sessionDescription.description);
+                int stop =sdpPayload.indexOf(',');
+                String description = sdpPayload.substring(13,stop);//.replaceAll("\\r\\n"," ");
+                System.out.println("description: "+description);
+                SessionDescription sessionDescription = new SessionDescription(SessionDescription.Type.OFFER,description);
                 peerConnection.setRemoteDescription(sdpObserver,sessionDescription);
                 System.out.println("Offer"+msg.getRecipient());
                 peerConnection.createAnswer(sdpObserver,mediaConstraints);
 
                 ////////////////////////////////////////////
 //                peerConnection.setLocalDescription(sdpObserver,sessionDescription);
-//                System.out.println("sessionDescription:"+sessionDescription);
+//                System.out.println("sessionDescription:"+sessionDescription.description);
 //                SignalMessage answerMessage = new SignalMessage(SignalMessage.MsgType.ANSWER,"sender", "51", "chico Slavcho", sessionDescription);
 //                try {
 //                    websocket.sendText(mapper.writeValueAsString(answerMessage));
